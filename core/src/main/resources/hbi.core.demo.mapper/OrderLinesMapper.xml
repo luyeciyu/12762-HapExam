@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hbi.core.demo.mapper.OrderLinesMapper">
+    <resultMap id="orderLinesRM" type="hbi.core.demo.dto.OrderLines">
+        <id property="lineId" column="line_id"></id>
+        <result property="headerId" column="header_id"></result>
+        <result property="lineNumber" column="line_number"></result>
+        <result property="inventoryItemId" column="inventory_item_id"></result>
+        <result property="orderdQuantity" column="orderd_quantity"></result>
+        <result property="orderQuantityUom" column="order_quantity_uom"></result>
+        <result property="unitSellingPrice" column="unit_selling_price"></result>
+        <result property="description" column="description"></result>
+        <result property="companyId" column="company_id"></result>
+        <result property="addition1" column="addition1"></result>
+        <result property="addition2" column="addition2"></result>
+        <result property="addition3" column="addition3"></result>
+        <result property="addition4" column="addition4"></result>
+        <result property="addition5" column="addition5"></result>
+
+        <!-- 虚拟字段 -->
+
+        <result property="itemCode" column="item_code"></result>
+        <result property="itemDescription" column="item_description"></result>
+        <result property="orderQuantityAmount" column="order_quantity_amount"></result>
+    </resultMap>
+
+    <select id="queryPage" parameterType="hbi.core.demo.dto.OrderLines" resultMap="orderLinesRM">
+        SELECT
+            o.line_id, o.header_id, o.line_number, o.inventory_item_id, o.orderd_quantity, o.order_quantity_uom,
+            o.unit_selling_price, o.description,o.company_id, o.addition1,o.addition2,o.addition3,o.addition4,o.addition5,
+            o.unit_selling_price*o.orderd_quantity as order_quantity_amount,
+
+            inv.item_code,inv.item_description
+        FROM hap_om_order_lines o
+        LEFT JOIN hap_inv_inventory_items inv ON o.inventory_item_id=inv.inventory_item_id
+        WHERE o.header_id=#{headerId}
+        ORDER BY o.line_number
+    </select>
+
+
+    <select id="getLineNumberByHeaderId" parameterType="hbi.core.demo.dto.OrderLines" resultType="int">
+        SELECT IFNULL(MAX(line_number),0)+1 as lineNumber
+        FROM hap_om_order_lines o
+        WHERE o.header_id=#{headerId}
+    </select>
+</mapper>

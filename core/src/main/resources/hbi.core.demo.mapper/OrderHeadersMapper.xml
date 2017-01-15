@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hbi.core.demo.mapper.OrderHeadersMapper">
+    <resultMap id="orderHeaderRM" type="hbi.core.demo.dto.OrderHeaders">
+        <id property="headerId" column="header_id"></id>
+        <result property="orderNumber" column="order_number"></result>
+        <result property="companyId" column="company_id"></result>
+        <result property="orderDate" column="order_date"></result>
+        <result property="orderStatus" column="order_status"></result>
+        <result property="customerId" column="customer_id"></result>
+        <!-- 虚拟字段 -->
+
+        <result property="companyName" column="company_name"></result>
+        <result property="customerName" column="customer_name"></result>
+        <result property="orderAmount" column="order_amount"></result>
+
+        <!--<result property="orderStatusText" column="order_status_text"></result>-->
+        <!--<result property="inventoryItemId" column="inventory_item_id"></result>-->
+    </resultMap>
+
+    <select id="queryPage" parameterType="hbi.core.demo.dto.OrderHeaders" resultMap="orderHeaderRM">
+        SELECT
+            o.header_id, o.order_number, o.company_id, o.order_date, o.order_status, o.customer_id,
+            org.company_name,
+            c.customer_name,
+            sum_t.sum_o as order_amount
+        FROM hap_om_order_headers o
+        LEFT JOIN hap_org_companys org ON o.company_id=org.company_id
+        LEFT JOIN hap_ar_customers c ON o.customer_id=c.customer_id
+        LEFT JOIN (
+            SELECT sum(l.unit_selling_price*l.orderd_quantity) as sum_o, l.header_id
+            FROM  hap_om_order_lines l
+            GROUP BY l.header_id) sum_t ON sum_t.header_id=o.header_id
+        WHERE 1=1
+        <if test="companyId != null"> AND o.company_id=#{companyId}</if>
+        <if test="customerId != null"> AND o.customer_id=#{customerId}</if>
+        <if test="orderStatus != null"> AND o.order_status=#{orderStatus}</if>
+        <if test="orderNumber != null"> AND o.order_number LIKE CONCAT('%', #{orderNumber}, '%')</if>
+        /*物料条件未加*/
+        <if test="inventoryItemId != null">
+            and #{inventoryItemId} in(
+            SELECT l.INVENTORY_ITEM_ID
+            from hap_om_order_lines l
+            WHERE l.header_id = o.header_id)
+        </if>
+    </select>
+
+
+
+    <select id="getById" parameterType="hbi.core.demo.dto.OrderHeaders" resultMap="orderHeaderRM">
+        SELECT
+        o.header_id, o.order_number, o.company_id, o.order_date, o.order_status, o.customer_id,
+        org.company_name,
+        c.customer_name
+        FROM hap_om_order_headers o
+        LEFT JOIN hap_org_companys org ON o.company_id=org.company_id
+        LEFT JOIN hap_ar_customers c ON o.customer_id=c.customer_id
+        WHERE o.header_id = #{headerId}
+
+    </select>
+</mapper>

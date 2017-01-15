@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hbi.core.demo.mapper.CompanysMapper">
+    <resultMap id="companysRM" type="hbi.core.demo.dto.Companys">
+        <id property="companyId" column="COMPANY_ID"></id>
+        <result property="companyNumber" column="COMPANY_NUMBER"></result>
+        <result property="companyName" column="COMPANY_NAME"></result>
+        <result property="enabledFlag" column="ENABLED_FLAG"></result>
+    </resultMap>
+
+    <select id="quesyPage" parameterType="hbi.core.demo.dto.Companys" resultMap="companysRM">
+        SELECT COMPANY_ID,COMPANY_NUMBER,COMPANY_NAME,ENABLED_FLAG
+        FROM hap_org_companys
+        WHERE  1=1
+        <if test="companyNumber != null"> AND o.COMPANY_NUMBER LIKE CONCAT('%', #{companyNumber}, '%')</if>
+        <if test="companyName != null"> AND o.COMPANY_NAME LIKE CONCAT('%', #{companyName}, '%')</if>
+    </select>
+</mapper>
